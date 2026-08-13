@@ -1,0 +1,3409 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="GSAP 经典与实战动画案例单文件 Demo：缓动、时间轴、交错、文字、SVG、滚动、路径运动与交互动画。" />
+  <title>GSAP Motion Lab｜经典动画案例</title>
+
+  <style>
+    :root {
+      --bg: #07101f;
+      --bg-2: #0b1730;
+      --surface: rgba(15, 29, 55, 0.78);
+      --surface-solid: #101d36;
+      --surface-2: #152644;
+      --line: rgba(174, 205, 255, 0.14);
+      --text: #eef5ff;
+      --muted: #9db0ca;
+      --primary: #79f2c0;
+      --secondary: #7aa7ff;
+      --accent: #ffcf66;
+      --danger: #ff7b91;
+      --radius-lg: 28px;
+      --radius-md: 18px;
+      --radius-sm: 12px;
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.34);
+      --max-width: 1180px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      overflow-x: hidden;
+      color: var(--text);
+      font-family:
+        Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background:
+        radial-gradient(circle at 12% -8%, rgba(122, 167, 255, 0.22), transparent 34rem),
+        radial-gradient(circle at 90% 8%, rgba(121, 242, 192, 0.14), transparent 30rem),
+        linear-gradient(180deg, #07101f 0%, #081426 44%, #060d19 100%);
+    }
+
+    body::before {
+      position: fixed;
+      z-index: -2;
+      inset: 0;
+      pointer-events: none;
+      content: "";
+      opacity: 0.34;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px);
+      background-size: 36px 36px;
+      mask-image: linear-gradient(to bottom, black, transparent 75%);
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      color: inherit;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    code,
+    pre {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    }
+
+    .container {
+      width: min(calc(100% - 32px), var(--max-width));
+      margin-inline: auto;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 14px;
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      width: 22px;
+      height: 1px;
+      content: "";
+      background: currentColor;
+    }
+
+    .section-heading {
+      max-width: 760px;
+      margin-bottom: 34px;
+    }
+
+    .section-heading h2 {
+      margin: 0 0 12px;
+      font-size: clamp(30px, 5vw, 58px);
+      line-height: 1.03;
+      letter-spacing: -0.045em;
+    }
+
+    .section-heading p {
+      max-width: 680px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.8;
+    }
+
+    .site-header {
+      position: fixed;
+      z-index: 100;
+      top: 14px;
+      left: 50%;
+      width: min(calc(100% - 24px), 1180px);
+      transform: translateX(-50%);
+    }
+
+    .nav-shell {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 58px;
+      padding: 8px 10px 8px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.11);
+      border-radius: 18px;
+      background: rgba(7, 16, 31, 0.73);
+      box-shadow: 0 18px 46px rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(18px);
+    }
+
+    .brand {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      white-space: nowrap;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+    }
+
+    .brand-mark {
+      position: relative;
+      display: grid;
+      width: 32px;
+      height: 32px;
+      place-items: center;
+      overflow: hidden;
+      border-radius: 10px;
+      color: #07101f;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      box-shadow: 0 0 24px rgba(121, 242, 192, 0.3);
+    }
+
+    .brand-mark::after {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(7, 16, 31, 0.64);
+      border-radius: 50%;
+      content: "";
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .nav-links a {
+      padding: 9px 11px;
+      border-radius: 10px;
+      color: #bdcce0;
+      font-size: 13px;
+      font-weight: 700;
+      transition: 180ms ease;
+    }
+
+    .nav-links a:hover {
+      color: white;
+      background: rgba(255, 255, 255, 0.07);
+    }
+
+    .nav-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .icon-btn,
+    .primary-btn,
+    .secondary-btn,
+    .replay-btn,
+    .tab-btn {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      cursor: pointer;
+      transition:
+        transform 180ms ease,
+        background-color 180ms ease,
+        border-color 180ms ease;
+    }
+
+    .icon-btn:hover,
+    .primary-btn:hover,
+    .secondary-btn:hover,
+    .replay-btn:hover,
+    .tab-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .primary-btn,
+    .secondary-btn {
+      min-height: 46px;
+      padding: 0 18px;
+      border-radius: 14px;
+      font-weight: 800;
+    }
+
+    .primary-btn {
+      color: #06101d;
+      background: linear-gradient(135deg, var(--primary), #a8ffd9);
+      box-shadow: 0 12px 28px rgba(121, 242, 192, 0.18);
+    }
+
+    .secondary-btn {
+      border: 1px solid var(--line);
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .hero {
+      position: relative;
+      display: grid;
+      min-height: 100vh;
+      place-items: center;
+      padding: 130px 0 80px;
+      overflow: hidden;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(340px, 0.95fr);
+      gap: 60px;
+      align-items: center;
+    }
+
+    .hero-copy {
+      position: relative;
+      z-index: 3;
+    }
+
+    .hero-kicker {
+      display: inline-flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 20px;
+      padding: 8px 12px;
+      border: 1px solid rgba(121, 242, 192, 0.22);
+      border-radius: 999px;
+      color: #c7ffe8;
+      background: rgba(121, 242, 192, 0.08);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 0 6px rgba(121, 242, 192, 0.09);
+    }
+
+    .hero-title {
+      max-width: 780px;
+      margin: 0;
+      font-size: clamp(52px, 8vw, 102px);
+      line-height: 0.92;
+      letter-spacing: -0.072em;
+    }
+
+    .hero-title .line {
+      display: block;
+      overflow: hidden;
+    }
+
+    .hero-title .word {
+      display: inline-block;
+      transform-origin: 50% 100%;
+    }
+
+    .gradient-text {
+      color: transparent;
+      background: linear-gradient(100deg, #ffffff 0%, #79f2c0 42%, #7aa7ff 100%);
+      background-clip: text;
+      -webkit-background-clip: text;
+    }
+
+    .hero-desc {
+      max-width: 650px;
+      margin: 28px 0 30px;
+      color: var(--muted);
+      font-size: clamp(16px, 2vw, 19px);
+      line-height: 1.8;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      margin-top: 34px;
+      color: #9eb0c8;
+      font-size: 13px;
+    }
+
+    .hero-meta strong {
+      display: block;
+      margin-bottom: 2px;
+      color: white;
+      font-size: 18px;
+    }
+
+    .hero-visual {
+      position: relative;
+      min-height: 540px;
+    }
+
+    .orbital-stage {
+      position: absolute;
+      inset: 50% auto auto 50%;
+      width: min(43vw, 500px);
+      aspect-ratio: 1;
+      transform: translate(-50%, -50%);
+    }
+
+    .core-orb {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 168px;
+      aspect-ratio: 1;
+      transform: translate(-50%, -50%);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.92), transparent 9%),
+        radial-gradient(circle at 35% 30%, #b7ffe2 0%, #62d9c0 34%, #4969dc 73%, #14224b 100%);
+      box-shadow:
+        inset -26px -28px 50px rgba(3, 9, 30, 0.64),
+        0 0 80px rgba(111, 214, 219, 0.42);
+    }
+
+    .core-orb::after {
+      position: absolute;
+      inset: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: inherit;
+      content: "";
+    }
+
+    .ring {
+      position: absolute;
+      inset: 50% auto auto 50%;
+      border: 1px solid rgba(157, 188, 255, 0.18);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .ring-1 {
+      width: 62%;
+      height: 62%;
+    }
+
+    .ring-2 {
+      width: 84%;
+      height: 84%;
+      transform: translate(-50%, -50%) rotate(52deg) scaleY(0.54);
+    }
+
+    .ring-3 {
+      width: 100%;
+      height: 100%;
+      border-style: dashed;
+      opacity: 0.65;
+    }
+
+    .satellite {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 20px;
+      height: 20px;
+      margin: -10px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 26px rgba(255, 207, 102, 0.78);
+    }
+
+    .satellite.secondary {
+      width: 12px;
+      height: 12px;
+      margin: -6px;
+      background: var(--secondary);
+      box-shadow: 0 0 22px rgba(122, 167, 255, 0.8);
+    }
+
+    .float-panel {
+      position: absolute;
+      z-index: 4;
+      width: 190px;
+      padding: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 18px;
+      background: rgba(12, 25, 48, 0.7);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .float-panel.panel-a {
+      top: 8%;
+      left: -2%;
+    }
+
+    .float-panel.panel-b {
+      right: -3%;
+      bottom: 10%;
+    }
+
+    .mini-label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .mini-value {
+      margin-top: 7px;
+      font-size: 26px;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+    }
+
+    .mini-chart {
+      display: flex;
+      gap: 5px;
+      align-items: end;
+      height: 46px;
+      margin-top: 12px;
+    }
+
+    .mini-chart span {
+      flex: 1;
+      height: var(--h);
+      border-radius: 5px 5px 2px 2px;
+      background: linear-gradient(to top, rgba(122, 167, 255, 0.36), var(--secondary));
+    }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 28px;
+      left: 50%;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      transform: translateX(-50%);
+      color: #7f93ad;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .mouse {
+      width: 19px;
+      height: 30px;
+      padding-top: 5px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 10px;
+    }
+
+    .mouse::after {
+      display: block;
+      width: 3px;
+      height: 6px;
+      margin: auto;
+      border-radius: 4px;
+      content: "";
+      background: white;
+    }
+
+    .demo-section {
+      position: relative;
+      padding: 110px 0;
+    }
+
+    .demo-shell {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background:
+        linear-gradient(160deg, rgba(255, 255, 255, 0.045), transparent 42%),
+        rgba(10, 22, 43, 0.74);
+      box-shadow: var(--shadow);
+    }
+
+    .demo-toolbar {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 66px;
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    .window-dots {
+      display: flex;
+      gap: 7px;
+    }
+
+    .window-dots i {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    .window-dots i:nth-child(1) { background: #ff7f82; }
+    .window-dots i:nth-child(2) { background: #ffd36f; }
+    .window-dots i:nth-child(3) { background: #73e6a7; }
+
+    .demo-title {
+      flex: 1;
+      min-width: 0;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .toolbar-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .replay-btn,
+    .tab-btn {
+      min-height: 36px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      color: #c9d6e8;
+      background: rgba(255, 255, 255, 0.045);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .demo-stage {
+      position: relative;
+      min-height: 420px;
+      padding: clamp(22px, 4vw, 48px);
+    }
+
+    .demo-note {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 20px;
+      align-items: center;
+      padding: 22px 26px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      background: rgba(5, 13, 27, 0.42);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .tag {
+      padding: 6px 9px;
+      border: 1px solid rgba(122, 167, 255, 0.17);
+      border-radius: 999px;
+      color: #bcd1f7;
+      background: rgba(122, 167, 255, 0.07);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .ease-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .ease-row {
+      display: grid;
+      grid-template-columns: 130px minmax(0, 1fr);
+      gap: 16px;
+      align-items: center;
+    }
+
+    .ease-label {
+      color: #c6d5e9;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .ease-track {
+      position: relative;
+      height: 42px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          transparent 0,
+          transparent calc(25% - 1px),
+          rgba(255, 255, 255, 0.045) calc(25% - 1px),
+          rgba(255, 255, 255, 0.045) 25%
+        ),
+        rgba(255, 255, 255, 0.025);
+    }
+
+    .ease-ball {
+      position: absolute;
+      top: 9px;
+      left: 10px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      box-shadow: 0 0 22px rgba(121, 242, 192, 0.42);
+    }
+
+    .dashboard-scene {
+      display: grid;
+      grid-template-columns: 190px 1fr;
+      min-height: 500px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: #0b1730;
+      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35);
+    }
+
+    .dash-sidebar {
+      padding: 22px 16px;
+      border-right: 1px solid var(--line);
+      background: #0d1930;
+    }
+
+    .dash-logo {
+      display: flex;
+      gap: 9px;
+      align-items: center;
+      margin-bottom: 28px;
+      font-weight: 900;
+    }
+
+    .dash-logo i {
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--secondary), var(--primary));
+    }
+
+    .side-item {
+      height: 36px;
+      margin: 7px 0;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.045);
+    }
+
+    .side-item.active {
+      background: rgba(121, 242, 192, 0.12);
+      box-shadow: inset 3px 0 var(--primary);
+    }
+
+    .dash-main {
+      position: relative;
+      padding: 24px;
+    }
+
+    .dash-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .dash-heading {
+      width: 34%;
+      height: 18px;
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ffcf66, #ff7b91);
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .metric-card,
+    .dash-chart-card {
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .metric-card {
+      min-height: 116px;
+      padding: 16px;
+    }
+
+    .metric-card span {
+      display: block;
+      width: 48%;
+      height: 8px;
+      margin-bottom: 18px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.16);
+    }
+
+    .metric-card strong {
+      font-size: 25px;
+      letter-spacing: -0.04em;
+    }
+
+    .metric-card small {
+      display: block;
+      margin-top: 9px;
+      color: var(--primary);
+    }
+
+    .dash-chart-card {
+      position: relative;
+      min-height: 218px;
+      margin-top: 14px;
+      padding: 16px;
+      overflow: hidden;
+    }
+
+    .chart-grid {
+      position: absolute;
+      inset: 54px 16px 18px;
+      background:
+        linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+      background-size: 100% 25%;
+    }
+
+    .chart-svg {
+      position: absolute;
+      inset: 54px 16px 18px;
+      width: calc(100% - 32px);
+      height: calc(100% - 72px);
+      overflow: visible;
+    }
+
+    .chart-line {
+      fill: none;
+      stroke: url(#chartGradient);
+      stroke-linecap: round;
+      stroke-width: 4;
+    }
+
+    .chart-area {
+      fill: url(#areaGradient);
+      opacity: 0.34;
+    }
+
+    .dash-toast {
+      position: absolute;
+      z-index: 8;
+      right: 20px;
+      bottom: 20px;
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 11px;
+      align-items: center;
+      width: 242px;
+      padding: 13px;
+      border: 1px solid rgba(121, 242, 192, 0.19);
+      border-radius: 14px;
+      background: rgba(11, 27, 45, 0.96);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.4);
+    }
+
+    .toast-check {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border-radius: 10px;
+      color: #07101f;
+      background: var(--primary);
+      font-weight: 900;
+    }
+
+    .dash-toast strong {
+      display: block;
+      font-size: 12px;
+    }
+
+    .dash-toast small {
+      color: var(--muted);
+    }
+
+    .stagger-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 10px;
+      width: min(720px, 100%);
+      margin: 18px auto;
+    }
+
+    .stagger-cell {
+      aspect-ratio: 1;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 13px;
+      background:
+        radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.34), transparent 18%),
+        linear-gradient(145deg, rgba(122, 167, 255, 0.9), rgba(121, 242, 192, 0.34));
+      box-shadow: inset -7px -8px 16px rgba(4, 11, 29, 0.22);
+    }
+
+    .stagger-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 26px;
+    }
+
+    .stagger-options button {
+      min-height: 38px;
+      padding: 0 13px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      cursor: pointer;
+      color: #c6d5e9;
+      background: rgba(255, 255, 255, 0.04);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .stagger-options button.active {
+      border-color: rgba(121, 242, 192, 0.38);
+      color: var(--primary);
+      background: rgba(121, 242, 192, 0.08);
+    }
+
+    .text-lab {
+      display: grid;
+      min-height: 410px;
+      place-items: center;
+      text-align: center;
+    }
+
+    .reveal-title {
+      max-width: 920px;
+      margin: 0;
+      font-size: clamp(42px, 8vw, 92px);
+      line-height: 0.95;
+      letter-spacing: -0.065em;
+    }
+
+    .char-wrap {
+      display: inline-block;
+      overflow: hidden;
+      vertical-align: bottom;
+    }
+
+    .char {
+      display: inline-block;
+      transform-origin: 50% 100%;
+    }
+
+    .reveal-subtitle {
+      max-width: 580px;
+      margin: 24px auto 0;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .svg-stage {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 34px;
+      align-items: center;
+      min-height: 460px;
+    }
+
+    .logo-draw {
+      width: 100%;
+      max-height: 340px;
+      overflow: visible;
+    }
+
+    .draw-path {
+      fill: none;
+      stroke: url(#logoStroke);
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-width: 9;
+    }
+
+    .draw-dot {
+      fill: var(--accent);
+      filter: drop-shadow(0 0 10px rgba(255, 207, 102, 0.8));
+    }
+
+    .svg-copy h3 {
+      margin: 0 0 14px;
+      font-size: clamp(30px, 5vw, 52px);
+      line-height: 1.02;
+      letter-spacing: -0.045em;
+    }
+
+    .svg-copy p {
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .progress-card {
+      margin-top: 28px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .progress-head {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .progress-track {
+      height: 8px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .progress-fill {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--secondary), var(--primary));
+    }
+
+    .interaction-stage {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 26px;
+      align-items: stretch;
+    }
+
+    .product-card {
+      position: relative;
+      display: grid;
+      min-height: 460px;
+      place-items: center;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background:
+        radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(122, 167, 255, 0.2), transparent 34%),
+        linear-gradient(145deg, #142442, #0b172d);
+      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.34);
+      transform-style: preserve-3d;
+      perspective: 900px;
+    }
+
+    .product-glare {
+      position: absolute;
+      inset: -30%;
+      pointer-events: none;
+      opacity: 0;
+      background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.18), transparent 65%);
+      transform: translateX(-30%) rotate(8deg);
+    }
+
+    .shoe {
+      position: relative;
+      width: 72%;
+      height: 210px;
+      transform: translateZ(58px) rotate(-10deg);
+    }
+
+    .shoe-body {
+      position: absolute;
+      inset: 34px 18px 48px 5px;
+      border-radius: 70% 35% 42% 40%;
+      background:
+        linear-gradient(160deg, #d9fff0 0 25%, #80dfbe 26% 56%, #23556c 57% 100%);
+      box-shadow:
+        inset -18px -20px 26px rgba(7, 16, 31, 0.34),
+        0 26px 38px rgba(0, 0, 0, 0.32);
+      clip-path: polygon(2% 28%, 26% 5%, 73% 15%, 98% 56%, 91% 79%, 57% 76%, 43% 93%, 7% 80%);
+    }
+
+    .shoe-sole {
+      position: absolute;
+      right: 0;
+      bottom: 26px;
+      left: 0;
+      height: 48px;
+      border-radius: 48% 42% 30% 46%;
+      background: #eef8f5;
+      box-shadow: inset 0 -14px 0 #9fb5b4;
+      transform: skewX(-12deg);
+    }
+
+    .shoe-laces {
+      position: absolute;
+      z-index: 3;
+      top: 76px;
+      left: 47%;
+      width: 70px;
+      height: 58px;
+      border-top: 5px double rgba(7, 16, 31, 0.78);
+      border-bottom: 5px double rgba(7, 16, 31, 0.78);
+      transform: rotate(15deg);
+    }
+
+    .product-info {
+      position: absolute;
+      right: 24px;
+      bottom: 22px;
+      left: 24px;
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      transform: translateZ(42px);
+    }
+
+    .product-info small {
+      color: #9eb2ca;
+      font-weight: 800;
+    }
+
+    .product-info h3 {
+      margin: 4px 0 0;
+      font-size: 25px;
+      letter-spacing: -0.04em;
+    }
+
+    .price {
+      padding: 10px 12px;
+      border-radius: 12px;
+      color: #07101f;
+      background: var(--primary);
+      font-weight: 900;
+    }
+
+    .interaction-panel {
+      display: grid;
+      align-content: center;
+      min-height: 460px;
+      padding: 34px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .interaction-panel h3 {
+      margin: 0 0 12px;
+      font-size: 36px;
+      letter-spacing: -0.045em;
+    }
+
+    .interaction-panel p {
+      margin: 0 0 30px;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .magnetic-wrap {
+      display: grid;
+      min-height: 210px;
+      place-items: center;
+      border: 1px dashed rgba(255, 255, 255, 0.14);
+      border-radius: 18px;
+      background: rgba(4, 10, 24, 0.3);
+    }
+
+    .magnetic-btn {
+      position: relative;
+      display: grid;
+      width: 138px;
+      height: 138px;
+      place-items: center;
+      border: 1px solid rgba(121, 242, 192, 0.4);
+      border-radius: 50%;
+      cursor: pointer;
+      color: #07101f;
+      background: var(--primary);
+      box-shadow: 0 18px 46px rgba(121, 242, 192, 0.25);
+      font-weight: 900;
+      transform: translate3d(0, 0, 0);
+    }
+
+    .magnetic-btn::after {
+      position: absolute;
+      inset: -13px;
+      border: 1px solid rgba(121, 242, 192, 0.16);
+      border-radius: inherit;
+      content: "";
+    }
+
+    .loader-stage {
+      display: grid;
+      grid-template-columns: 1fr 0.8fr;
+      gap: 34px;
+      align-items: center;
+      min-height: 420px;
+    }
+
+    .phone {
+      width: min(330px, 100%);
+      margin: auto;
+      padding: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 34px;
+      background: #091325;
+      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.4);
+    }
+
+    .phone-screen {
+      min-height: 500px;
+      padding: 20px;
+      overflow: hidden;
+      border-radius: 24px;
+      background: #f2f6fb;
+      color: #142033;
+    }
+
+    .phone-notch {
+      width: 86px;
+      height: 18px;
+      margin: -12px auto 22px;
+      border-radius: 0 0 12px 12px;
+      background: #091325;
+    }
+
+    .skeleton {
+      position: relative;
+      overflow: hidden;
+      border-radius: 9px;
+      background: #dfe7f0;
+    }
+
+    .skeleton::after {
+      position: absolute;
+      inset: 0;
+      content: "";
+      background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.75) 48%, transparent 74%);
+      transform: translateX(-110%);
+    }
+
+    .sk-title { width: 56%; height: 20px; margin-bottom: 18px; }
+    .sk-hero { width: 100%; height: 168px; margin-bottom: 16px; }
+    .sk-line { width: 100%; height: 11px; margin: 10px 0; }
+    .sk-line.short { width: 67%; }
+
+    .loaded-content {
+      display: none;
+    }
+
+    .loaded-content h4 {
+      margin: 0 0 10px;
+      font-size: 26px;
+    }
+
+    .loaded-image {
+      display: grid;
+      height: 168px;
+      margin-bottom: 16px;
+      place-items: center;
+      border-radius: 15px;
+      color: white;
+      background:
+        radial-gradient(circle at 36% 35%, #b8ffde, transparent 12%),
+        linear-gradient(145deg, #66d9b7, #4567c9);
+      font-size: 42px;
+      font-weight: 900;
+    }
+
+    .loaded-content p {
+      color: #5f6f85;
+      line-height: 1.7;
+    }
+
+    .loader-copy h3 {
+      margin: 0 0 12px;
+      font-size: clamp(34px, 5vw, 56px);
+      letter-spacing: -0.05em;
+    }
+
+    .loader-copy p {
+      color: var(--muted);
+      line-height: 1.85;
+    }
+
+    .status-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 28px;
+    }
+
+    .status-item {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      color: #cbd7e8;
+      font-size: 13px;
+    }
+
+    .status-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    .status-item.active .status-dot {
+      background: var(--primary);
+      box-shadow: 0 0 14px rgba(121, 242, 192, 0.7);
+    }
+
+    .motion-stage {
+      display: grid;
+      grid-template-columns: 1fr 0.8fr;
+      gap: 30px;
+      align-items: center;
+      min-height: 460px;
+    }
+
+    .flight-map {
+      position: relative;
+      min-height: 380px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background:
+        radial-gradient(circle at 20% 30%, rgba(121, 242, 192, 0.1), transparent 18%),
+        radial-gradient(circle at 78% 65%, rgba(122, 167, 255, 0.13), transparent 22%),
+        #09172d;
+    }
+
+    .flight-map::before {
+      position: absolute;
+      inset: 0;
+      content: "";
+      opacity: 0.34;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+      background-size: 30px 30px;
+    }
+
+    .route-svg {
+      position: absolute;
+      inset: 8%;
+      width: 84%;
+      height: 84%;
+      overflow: visible;
+    }
+
+    .route-path {
+      fill: none;
+      stroke: rgba(122, 167, 255, 0.48);
+      stroke-dasharray: 7 9;
+      stroke-linecap: round;
+      stroke-width: 3;
+    }
+
+    .route-glow {
+      fill: none;
+      stroke: rgba(121, 242, 192, 0.22);
+      stroke-width: 12;
+      filter: blur(4px);
+    }
+
+    .plane {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 3;
+      display: grid;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      border-radius: 50%;
+      color: #07101f;
+      background: var(--primary);
+      box-shadow: 0 0 28px rgba(121, 242, 192, 0.66);
+      font-size: 18px;
+      transform: translate(-50%, -50%);
+    }
+
+    .map-city {
+      position: absolute;
+      z-index: 2;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .city-a { top: 72%; left: 12%; }
+    .city-b { top: 20%; right: 10%; }
+
+    .flight-copy h3 {
+      margin: 0 0 12px;
+      font-size: clamp(34px, 5vw, 52px);
+      letter-spacing: -0.05em;
+    }
+
+    .flight-copy p {
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .flight-stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .flight-stat {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .flight-stat small {
+      display: block;
+      color: var(--muted);
+    }
+
+    .flight-stat strong {
+      display: block;
+      margin-top: 5px;
+      font-size: 22px;
+    }
+
+    .scroll-story {
+      position: relative;
+      min-height: 100vh;
+      padding: 0;
+      background: #060d19;
+    }
+
+    .story-pin {
+      display: grid;
+      min-height: 100vh;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .story-header {
+      position: absolute;
+      z-index: 4;
+      top: 110px;
+      left: max(24px, calc((100vw - var(--max-width)) / 2));
+      max-width: 520px;
+    }
+
+    .story-header h2 {
+      margin: 0;
+      font-size: clamp(34px, 5vw, 64px);
+      line-height: 0.98;
+      letter-spacing: -0.055em;
+    }
+
+    .story-header p {
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .story-track {
+      display: flex;
+      gap: 24px;
+      width: max-content;
+      padding: 220px max(24px, calc((100vw - var(--max-width)) / 2)) 70px;
+    }
+
+    .story-card {
+      position: relative;
+      width: min(76vw, 560px);
+      height: min(54vh, 470px);
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 28px;
+      background: #101d36;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.42);
+    }
+
+    .story-card::before {
+      position: absolute;
+      inset: 0;
+      content: "";
+      background: var(--story-bg);
+    }
+
+    .story-index {
+      position: absolute;
+      top: 24px;
+      left: 26px;
+      color: rgba(255, 255, 255, 0.66);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.13em;
+    }
+
+    .story-visual {
+      position: absolute;
+      inset: 16% 8% 28%;
+      transform-origin: center;
+    }
+
+    .visual-rings {
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 50%;
+    }
+
+    .visual-rings::before,
+    .visual-rings::after {
+      position: absolute;
+      inset: 12%;
+      border: inherit;
+      border-radius: inherit;
+      content: "";
+    }
+
+    .visual-rings::after {
+      inset: 26%;
+    }
+
+    .visual-stack {
+      display: grid;
+      gap: 10px;
+      align-content: center;
+    }
+
+    .visual-stack i {
+      display: block;
+      width: calc(40% + var(--i) * 9%);
+      height: 32px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, calc(0.12 + var(--i) * 0.07));
+      transform: translateX(calc(var(--i) * 8%));
+    }
+
+    .visual-wave {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .visual-wave i {
+      width: 10px;
+      height: calc(18% + var(--i) * 8%);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, calc(0.18 + var(--i) * 0.07));
+    }
+
+    .story-content {
+      position: absolute;
+      right: 26px;
+      bottom: 24px;
+      left: 26px;
+    }
+
+    .story-content h3 {
+      margin: 0 0 8px;
+      font-size: clamp(26px, 4vw, 42px);
+      letter-spacing: -0.04em;
+    }
+
+    .story-content p {
+      max-width: 420px;
+      margin: 0;
+      color: rgba(255, 255, 255, 0.72);
+      line-height: 1.65;
+    }
+
+    .reveal-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .reveal-card {
+      min-height: 290px;
+      padding: 26px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.055), transparent),
+        rgba(12, 25, 48, 0.72);
+      box-shadow: 0 24px 55px rgba(0, 0, 0, 0.24);
+    }
+
+    .reveal-card .number {
+      display: inline-grid;
+      width: 46px;
+      height: 46px;
+      place-items: center;
+      border-radius: 14px;
+      color: #07101f;
+      background: var(--primary);
+      font-weight: 900;
+    }
+
+    .reveal-card h3 {
+      margin: 58px 0 12px;
+      font-size: 26px;
+      letter-spacing: -0.04em;
+    }
+
+    .reveal-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+
+    .counter-band {
+      margin-top: 60px;
+      padding: 42px;
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      background:
+        radial-gradient(circle at 20% 30%, rgba(121, 242, 192, 0.1), transparent 24%),
+        rgba(255, 255, 255, 0.035);
+    }
+
+    .counter-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    .counter-item strong {
+      display: block;
+      font-size: clamp(38px, 6vw, 70px);
+      letter-spacing: -0.065em;
+    }
+
+    .counter-item span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .code-drawer {
+      display: none;
+      border-top: 1px solid var(--line);
+      background: #07101f;
+    }
+
+    .code-drawer.open {
+      display: block;
+    }
+
+    .code-drawer pre {
+      max-height: 360px;
+      margin: 0;
+      overflow: auto;
+      padding: 24px;
+      color: #bcd3ef;
+      font-size: 12px;
+      line-height: 1.7;
+      tab-size: 2;
+    }
+
+    .code-keyword { color: #ff9ab0; }
+    .code-method { color: #8ac6ff; }
+    .code-string { color: #a7efc8; }
+    .code-comment { color: #63758d; }
+
+    .footer {
+      padding: 80px 0 44px;
+      border-top: 1px solid var(--line);
+      text-align: center;
+    }
+
+    .footer h2 {
+      margin: 0;
+      font-size: clamp(34px, 6vw, 72px);
+      letter-spacing: -0.06em;
+    }
+
+    .footer p {
+      margin: 18px auto 28px;
+      color: var(--muted);
+    }
+
+    .footer-note {
+      margin-top: 54px;
+      color: #667991;
+      font-size: 12px;
+    }
+
+    .offline-warning {
+      position: fixed;
+      z-index: 999;
+      right: 18px;
+      bottom: 18px;
+      display: none;
+      max-width: 360px;
+      padding: 14px 16px;
+      border: 1px solid rgba(255, 123, 145, 0.26);
+      border-radius: 14px;
+      color: #ffd9e0;
+      background: rgba(73, 17, 32, 0.94);
+      box-shadow: var(--shadow);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .offline-warning.show {
+      display: block;
+    }
+
+    @media (max-width: 980px) {
+      .nav-links {
+        display: none;
+      }
+
+      .hero-grid,
+      .svg-stage,
+      .loader-stage,
+      .motion-stage {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-copy {
+        text-align: center;
+      }
+
+      .hero-desc {
+        margin-inline: auto;
+      }
+
+      .hero-actions,
+      .hero-meta {
+        justify-content: center;
+      }
+
+      .hero-visual {
+        min-height: 460px;
+      }
+
+      .orbital-stage {
+        width: min(86vw, 490px);
+      }
+
+      .interaction-stage {
+        grid-template-columns: 1fr;
+      }
+
+      .dashboard-scene {
+        grid-template-columns: 1fr;
+      }
+
+      .dash-sidebar {
+        display: none;
+      }
+
+      .reveal-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .counter-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 680px) {
+      .site-header {
+        top: 8px;
+      }
+
+      .nav-shell {
+        min-height: 52px;
+      }
+
+      .brand span:last-child {
+        display: none;
+      }
+
+      .hero {
+        padding-top: 108px;
+      }
+
+      .hero-title {
+        font-size: clamp(48px, 16vw, 74px);
+      }
+
+      .hero-visual {
+        min-height: 390px;
+      }
+
+      .float-panel {
+        width: 155px;
+      }
+
+      .float-panel.panel-a {
+        left: 0;
+      }
+
+      .float-panel.panel-b {
+        right: 0;
+      }
+
+      .demo-section {
+        padding: 78px 0;
+      }
+
+      .demo-toolbar {
+        align-items: flex-start;
+      }
+
+      .demo-title {
+        display: none;
+      }
+
+      .demo-note {
+        grid-template-columns: 1fr;
+      }
+
+      .ease-row {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+
+      .stagger-grid {
+        grid-template-columns: repeat(6, 1fr);
+      }
+
+      .metric-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .dashboard-scene {
+        min-height: 690px;
+      }
+
+      .interaction-panel,
+      .product-card {
+        min-height: 400px;
+      }
+
+      .counter-band {
+        padding: 26px;
+      }
+
+      .counter-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .story-header {
+        top: 90px;
+        right: 24px;
+        left: 24px;
+      }
+
+      .story-track {
+        padding-top: 250px;
+      }
+
+      .story-card {
+        width: 82vw;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="offline-warning" id="offlineWarning">
+    GSAP CDN 未加载。请确认当前设备可以访问互联网，或把 GSAP 与 ScrollTrigger 脚本下载到本地后替换页面底部的 CDN 地址。
+  </div>
+
+  <header class="site-header">
+    <div class="nav-shell">
+      <a class="brand" href="#top" aria-label="返回顶部">
+        <span class="brand-mark"></span>
+        <span>GSAP Motion Lab</span>
+      </a>
+
+      <nav class="nav-links" aria-label="案例导航">
+        <a href="#easing">缓动</a>
+        <a href="#timeline">时间轴</a>
+        <a href="#stagger">交错</a>
+        <a href="#svg">SVG</a>
+        <a href="#interaction">交互</a>
+        <a href="#scroll">滚动</a>
+      </nav>
+
+      <div class="nav-actions">
+        <button class="icon-btn" id="toggleMotion" type="button" aria-label="暂停或继续所有动画" title="暂停 / 继续">
+          <span id="motionIcon">Ⅱ</span>
+        </button>
+        <button class="primary-btn" id="replayHero" type="button">重播首页</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <div class="hero-kicker">
+            <span class="live-dot"></span>
+            GSAP 3.13+ · Single File Demo
+          </div>
+
+          <h1 class="hero-title" aria-label="Motion makes interface feel alive">
+            <span class="line"><span class="word gradient-text">Motion</span></span>
+            <span class="line"><span class="word">makes interfaces</span></span>
+            <span class="line"><span class="word">feel alive.</span></span>
+          </h1>
+
+          <p class="hero-desc">
+            一个可拆解、可重播、可直接复制代码的 GSAP 动画实验室。覆盖 Tween、Timeline、Stagger、
+            SVG、ScrollTrigger、响应式动画、指针交互和路径运动等常见场景。
+          </p>
+
+          <div class="hero-actions">
+            <a class="primary-btn magnetic-link" href="#easing">浏览动画案例 →</a>
+            <button class="secondary-btn" id="playShowcase" type="button">播放组合演示</button>
+          </div>
+
+          <div class="hero-meta">
+            <div><strong>10+</strong>实战案例</div>
+            <div><strong>0</strong>图片依赖</div>
+            <div><strong>1</strong>HTML 文件</div>
+          </div>
+        </div>
+
+        <div class="hero-visual" aria-hidden="true">
+          <div class="orbital-stage">
+            <div class="ring ring-3"></div>
+            <div class="ring ring-2"></div>
+            <div class="ring ring-1"></div>
+            <div class="core-orb"></div>
+            <div class="satellite satellite-a"></div>
+            <div class="satellite secondary satellite-b"></div>
+          </div>
+
+          <div class="float-panel panel-a">
+            <div class="mini-label">Timeline FPS</div>
+            <div class="mini-value">60.0</div>
+            <div class="mini-chart">
+              <span style="--h: 48%"></span>
+              <span style="--h: 72%"></span>
+              <span style="--h: 58%"></span>
+              <span style="--h: 86%"></span>
+              <span style="--h: 68%"></span>
+              <span style="--h: 96%"></span>
+            </div>
+          </div>
+
+          <div class="float-panel panel-b">
+            <div class="mini-label">Active Tweens</div>
+            <div class="mini-value">24</div>
+            <div style="margin-top: 10px; color: var(--primary); font-size: 12px; font-weight: 800;">● Running smoothly</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="scroll-hint" aria-hidden="true">
+        <span class="mouse"></span>
+        Scroll to explore
+      </div>
+    </section>
+
+    <section class="demo-section" id="easing">
+      <div class="container">
+        <div class="section-heading reveal-on-scroll">
+          <div class="eyebrow">01 · Easing</div>
+          <h2>同样的距离，不同的“性格”</h2>
+          <p>
+            缓动决定动画如何加速和减速。真实界面通常不是匀速移动：按钮反馈适合快速收尾，
+            弹层适合带一点回弹，强调动画则可以使用弹跳或弹性效果。
+          </p>
+        </div>
+
+        <div class="demo-shell reveal-on-scroll">
+          <div class="demo-toolbar">
+            <div class="window-dots"><i></i><i></i><i></i></div>
+            <div class="demo-title">Ease comparison</div>
+            <div class="toolbar-actions">
+              <button class="tab-btn code-toggle" data-target="code-easing" type="button">查看代码</button>
+              <button class="replay-btn" id="replayEasing" type="button">↻ 重播</button>
+            </div>
+          </div>
+
+          <div class="demo-stage">
+            <div class="ease-list" id="easeList">
+              <div class="ease-row">
+                <span class="ease-label">none</span>
+                <div class="ease-track"><i class="ease-ball" data-ease="none"></i></div>
+              </div>
+              <div class="ease-row">
+                <span class="ease-label">power2.out</span>
+                <div class="ease-track"><i class="ease-ball" data-ease="power2.out"></i></div>
+              </div>
+              <div class="ease-row">
+                <span class="ease-label">power4.inOut</span>
+                <div class="ease-track"><i class="ease-ball" data-ease="power4.inOut"></i></div>
+              </div>
+              <div class="ease-row">
+                <span class="ease-label">back.out(1.7)</span>
+                <div class="ease-track"><i class="ease-ball" data-ease="back.out(1.7)"></i></div>
+              </div>
+              <div class="ease-row">
+                <span class="ease-label">bounce.out</span>
+                <div class="ease-track"><i class="ease-ball" data-ease="bounce.out"></i></div>
+              </div>
+              <div class="ease-row">
+                <span class="ease-label">elastic.out</span>
+                <div class="ease-track"><i class="ease-ball" data-ease="elastic.out(1, 0.35)"></i></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="demo-note">
+            <span>实现要点：用函数动态计算每条轨道的可移动距离，窗口尺寸变化后依然不会越界。</span>
+            <div class="tags"><span class="tag">gsap.to()</span><span class="tag">ease</span><span class="tag">function value</span></div>
+          </div>
+
+          <div class="code-drawer" id="code-easing">
+<pre><span class="code-keyword">function</span> <span class="code-method">playEasing</span>() {
+  document.querySelectorAll(<span class="code-string">".ease-ball"</span>).forEach((ball) => {
+    <span class="code-method">gsap.fromTo</span>(
+      ball,
+      { x: 0 },
+      {
+        x: () => ball.parentElement.clientWidth - ball.offsetWidth - 20,
+        duration: 2.2,
+        ease: ball.dataset.ease
+      }
+    );
+  });
+}</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="demo-section" id="timeline">
+      <div class="container">
+        <div class="section-heading reveal-on-scroll">
+          <div class="eyebrow">02 · Timeline</div>
+          <h2>把复杂界面拆成有节奏的镜头</h2>
+          <p>
+            Timeline 可以把侧边栏、指标卡、图表和通知依次编排，并通过位置参数制造重叠，
+            比给每个动画手写 delay 更清晰、更容易暂停、倒放和重播。
+          </p>
+        </div>
+
+        <div class="demo-shell reveal-on-scroll">
+          <div class="demo-toolbar">
+            <div class="window-dots"><i></i><i></i><i></i></div>
+            <div class="demo-title">Dashboard onboarding sequence</div>
+            <div class="toolbar-actions">
+              <button class="tab-btn code-toggle" data-target="code-timeline" type="button">查看代码</button>
+              <button class="replay-btn" id="replayTimeline" type="button">↻ 重播</button>
+            </div>
+          </div>
+
+          <div class="demo-stage">
+            <div class="dashboard-scene" id="dashboardScene">
+              <aside class="dash-sidebar">
+                <div class="dash-logo"><i></i><span>Pulse</span></div>
+                <div class="side-item active"></div>
+                <div class="side-item"></div>
+                <div class="side-item"></div>
+                <div class="side-item"></div>
+              </aside>
+
+              <div class="dash-main">
+                <div class="dash-topbar">
+                  <div class="dash-heading"></div>
+                  <div class="avatar"></div>
+                </div>
+
+                <div class="metric-grid">
+                  <div class="metric-card">
+                    <span></span><strong class="metric-number" data-value="12840">0</strong><small>↑ 12.4%</small>
+                  </div>
+                  <div class="metric-card">
+                    <span></span><strong class="metric-number" data-value="864">0</strong><small>↑ 8.1%</small>
+                  </div>
+                  <div class="metric-card">
+                    <span></span><strong class="metric-number" data-value="96">0</strong><small>↑ 3.8%</small>
+                  </div>
+                </div>
+
+                <div class="dash-chart-card">
+                  <div style="font-size: 12px; font-weight: 800;">Weekly activity</div>
+                  <div class="chart-grid"></div>
+                  <svg class="chart-svg" viewBox="0 0 700 180" preserveAspectRatio="none" aria-hidden="true">
+                    <defs>
+                      <linearGradient id="chartGradient" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stop-color="#7aa7ff"/>
+                        <stop offset="100%" stop-color="#79f2c0"/>
+                      </linearGradient>
+                      <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#79f2c0"/>
+                        <stop offset="100%" stop-color="#79f2c0" stop-opacity="0"/>
+                      </linearGradient>
+                    </defs>
+                    <path class="chart-area" d="M0,160 C90,135 90,78 175,105 C250,130 270,28 360,72 C450,118 485,52 555,64 C625,75 650,27 700,18 L700,180 L0,180 Z"></path>
+                    <path class="chart-line dash-line" d="M0,160 C90,135 90,78 175,105 C250,130 270,28 360,72 C450,118 485,52 555,64 C625,75 650,27 700,18"></path>
+                  </svg>
+                </div>
+
+                <div class="dash-toast">
+                  <div class="toast-check">✓</div>
+                  <div><strong>Report generated</strong><small>All metrics are up to date.</small></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="demo-note">
+            <span>实现要点：将多个 Tween 放进同一个 Timeline，使用 “&lt;” 和 “-=0.4” 让动画自然重叠。</span>
+            <div class="tags"><span class="tag">timeline()</span><span class="tag">position</span><span class="tag">onUpdate</span></div>
+          </div>
+
+          <div class="code-drawer" id="code-timeline">
+<pre><span class="code-keyword">const</span> tl = <span class="code-method">gsap.timeline</span>();
+
+tl
+  .from(<span class="code-string">".dash-sidebar"</span>, { xPercent: -100, duration: 0.7 })
+  .from(<span class="code-string">".dash-topbar"</span>, { y: -20, opacity: 0 }, <span class="code-string">"-=0.25"</span>)
+  .from(<span class="code-string">".metric-card"</span>, {
+    y: 34,
+    opacity: 0,
+    stagger: 0.12
+  }, <span class="code-string">"-=0.25"</span>)
+  .from(<span class="code-string">".dash-chart-card"</span>, { scale: 0.96, opacity: 0 })
+  .from(<span class="code-string">".dash-toast"</span>, {
+    x: 50,
+    opacity: 0,
+    ease: <span class="code-string">"back.out(1.7)"</span>
+  });</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="demo-section" id="stagger">
+      <div class="container">
+        <div class="section-heading reveal-on-scroll">
+          <div class="eyebrow">03 · Stagger</div>
+          <h2>让一组元素形成波浪与秩序</h2>
+          <p>
+            Stagger 不只是“每个晚一点开始”。通过 from、grid、axis、amount 等参数，
+            可以从中心、边缘、随机位置或指定索引扩散。
+          </p>
+        </div>
+
+        <div class="demo-shell reveal-on-scroll">
+          <div class="demo-toolbar">
+            <div class="window-dots"><i></i><i></i><i></i></div>
+            <div class="demo-title">Advanced stagger patterns</div>
+            <div class="toolbar-actions">
+              <button class="tab-btn code-toggle" data-target="code-stagger" type="button">查看代码</button>
+              <button class="replay-btn" id="replayStagger" type="button">↻ 重播</button>
+            </div>
+          </div>
+
+          <div class="demo-stage">
+            <div class="stagger-grid" id="staggerGrid"></div>
+            <div class="stagger-options" id="staggerOptions">
+              <button class="active" data-from="center" type="button">从中心</button>
+              <button data-from="edges" type="button">从边缘</button>
+              <button data-from="random" type="button">随机</button>
+              <button data-from="0" type="button">从左上</button>
+            </div>
+          </div>
+
+          <div class="demo-note">
+            <span>实现要点：stagger 可以接收配置对象，适合照片墙、列表、数据点和粒子阵列。</span>
+            <div class="tags"><span class="tag">stagger.grid</span><span class="tag">from</span><span class="tag">amount</span></div>
+          </div>
+
+          <div class="code-drawer" id="code-stagger">
+<pre><span class="code-method">gsap.fromTo</span>(
+  <span class="code-string">".stagger-cell"</span>,
+  { scale: 0.35, opacity: 0, rotation: -18 },
+  {
+    scale: 1,
+    opacity: 1,
+    rotation: 0,
+    duration: 0.8,
+    ease: <span class="code-string">"back.out(1.8)"</span>,
+    stagger: {
+      grid: <span class="code-string">"auto"</span>,
+      from: <span class="code-string">"center"</span>,
+      amount: 0.8
+    }
+  }
+);</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="demo-section" id="text">
+      <div class="container">
+        <div class="section-heading reveal-on-scroll">
+          <div class="eyebrow">04 · Text Reveal</div>
+          <h2>逐字入场，不依赖额外文字插件</h2>
+          <p>
+            将文字拆为字符并给每个字符增加裁切容器，就可以制作标题翻转、向上揭示和逐字错峰。
+            真实项目应保留 aria-label，避免屏幕阅读器逐字朗读。
+          </p>
+        </div>
+
+        <div class="demo-shell reveal-on-scroll">
+          <div class="demo-toolbar">
+            <div class="window-dots"><i></i><i></i><i></i></div>
+            <div class="demo-title">Character reveal</div>
+            <div class="toolbar-actions">
+              <button class="tab-btn code-toggle" data-target="code-text" type="button">查看代码</button>
+              <button class="replay-btn" id="replayText" type="button">↻ 重播</button>
+            </div>
+          </div>
+
+          <div class="demo-stage text-lab">
+            <div>
+              <h3 class="reveal-title" id="revealTitle" data-text="Design with rhythm.">Design with rhythm.</h3>
+              <p class="reveal-subtitle">
+                好的动效不会抢走内容的注意力，而是帮助用户理解层级、状态变化与操作结果。
+              </p>
+            </div>
+          </div>
+
+          <div class="demo-note">
+            <span>实现要点：先拆字，再使用 yPercent、rotateX 与 stagger；空格用不换行空格保留宽度。</span>
+            <div class="tags"><span class="tag">split text</span><span class="tag">yPercent</span><span class="tag">rotateX</span></div>
+          </div>
+
+          <div class="code-drawer" id="code-text">
+<pre><span class="code-comment">// 每个字符结构：.char-wrap > .char</span>
+<span class="code-method">gsap.fromTo</span>(
+  <span class="code-string">".char"</span>,
+  { yPercent: 120, rotateX: -80, opacity: 0 },
+  {
+    yPercent: 0,
+    rotateX: 0,
+    opacity: 1,
+    duration: 0.9,
+    ease: <span class="code-string">"power4.out"</span>,
+    stagger: 0.035
+  }
+);</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="demo-section" id="svg">
+      <div class="container">
+        <div class="section-heading reveal-on-scroll">
+          <div class="eyebrow">05 · SVG</div>
+          <h2>路径描边与进度联动</h2>
+          <p>
+            不使用 DrawSVG 插件，也可以通过 stroke-dasharray 和 stroke-dashoffset 完成路径绘制。
+            这类效果常用于 Logo、签名、流程线、地图路线和数据图表。
+          </p>
+        </div>
+
+        <div class="demo-shell reveal-on-scroll">
+          <div class="demo-toolbar">
+            <div class="window-dots"><i></i><i></i><i></i></div>
+            <div class="demo-title">SVG line drawing</div>
+            <div class="toolbar-actions">
+              <button class="tab-btn code-toggle" data-target="code-svg" type="button">查看代码</button>
+              <button class="replay-btn" id="replaySvg" type="button">↻ 重播</button>
+            </div>
+          </div>
+
+          <div class="demo-stage svg-stage">
+            <svg class="logo-draw" viewBox="0 0 620 380" aria-label="抽象字母 M 路径动画">
+              <defs>
+                <linearGradient id="logoStroke" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#7aa7ff"/>
+                  <stop offset="100%" stop-color="#79f2c0"/>
+                </linearGradient>
+              </defs>
+              <path class="draw-path" d="M75,292 C102,118 165,76 226,281 C264,402 303,90 353,92 C407,94 427,320 485,290 C527,268 543,175 565,90"/>
+              <circle class="draw-dot" cx="75" cy="292" r="9"/>
+              <circle class="draw-dot" cx="565" cy="90" r="9"/>
+            </svg>
+
+            <div class="svg-copy">
+              <h3>Draw the journey.</h3>
+              <p>
+                读取路径总长度后，把虚线长度和偏移量都设置为该长度；再将偏移量补间到 0，
+                视觉上就像线条正在被实时绘制。
+              </p>
+
+              <div class="progress-card">
+                <div class="progress-head"><span>Drawing progress</span><span id="svgProgress">0%</span></div>
+                <div class="progress-track"><div class="progress-fill" id="svgProgressFill"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="demo-note">
+            <span>实现要点：getTotalLength() 适用于 path；进度文字通过 onUpdate 与 Timeline 同步。</span>
+            <div class="tags"><span class="tag">SVG path</span><span class="tag">dashoffset</span><span class="tag">onUpdate</span></div>
+          </div>
+
+          <div class="code-drawer" id="code-svg">
+<pre><span class="code-keyword">const</span> path = document.querySelector(<span class="code-string">".draw-path"</span>);
+<span class="code-keyword">const</span> length = path.getTotalLength();
+
+<span class="code-method">gsap.set</span>(path, {
+  strokeDasharray: length,
+  strokeDashoffset: length
+});
+
+<span class="code-method">gsap.to</span>(path, {
+  strokeDashoffset: 0,
+  duration: 2.4,
+  ease: <span class="code-string">"power2.inOut"</span>
+});</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="demo-section" id="interaction">
+      <div class="container">
+        <div class="section-heading reveal-on-scroll">
+          <div class="eyebrow">06 · Pointer Interaction</div>
+          <h2>卡片倾斜、光泽与磁吸按钮</h2>
+          <p>
+            高频指针事件不应不断创建大量 Tween。使用 gsap.quickTo() 可以复用补间，
+            适合鼠标跟随、卡片视差、聚光灯和磁吸按钮。
+          </p>
+        </div>
+
+        <div class="demo-shell reveal-on-scroll">
+          <div class="demo-toolbar">
+            <div class="window-dots"><i></i><i></i><i></i></div>
+            <div class="demo-title">Interactive product card</div>
+            <div class="toolbar-actions">
+              <button class="tab-btn code-toggle" data-target="code-interaction" type="button">查看代码</button>
+            </div>
+          </div>
+
+          <div class="demo-stage interaction-stage">
+            <article class="product-card" id="productCard">
+              <div class="product-glare"></div>
+              <div class="shoe">
+                <div class="shoe-body"></div>
+                <div class="shoe-sole"></div>
+                <div class="shoe-laces"></div>
+              </div>
+              <div class="product-info">
+                <div><small>Velocity Series</small><h3>Aero Runner 01</h3></div>
+                <div class="price">¥899</div>
+              </div>
+            </article>
+
+            <div class="interaction-panel">
+              <h3>Move your pointer.</h3>
+              <p>
+                在左侧卡片上移动鼠标观察 3D 倾斜和高光变化；在下方区域靠近按钮，
+                按钮会以较小幅度跟随指针，离开后自动弹回中心。
+              </p>
+              <div class="magnetic-wrap" id="magneticWrap">
+                <button class="magnetic-btn" id="magneticBtn" type="button">EXPLORE ↗</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="demo-note">
+            <span>实现要点：将坐标归一化到 -1～1，再映射为 rotateX / rotateY；离开时恢复默认状态。</span>
+            <div class="tags"><span class="tag">quickTo()</span><span class="tag">pointermove</span><span class="tag">3D transform</span></div>
+          </div>
+
+          <div class="code-drawer" id="code-interaction">
+<pre><span class="code-keyword">const</span> rotateX = <span class="code-method">gsap.quickTo</span>(card, <span class="code-string">"rotationX"</span>, {
+  duration: 0.45,
+  ease: <span class="code-string">"power3.out"</span>
+});
+<span class="code-keyword">const</span> rotateY = <span class="code-method">gsap.quickTo</span>(card, <span class="code-string">"rotationY"</span>, {
+  duration: 0.45,
+  ease: <span class="code-string">"power3.out"</span>
+});
+
+card.addEventListener(<span class="code-string">"pointermove"</span>, (event) => {
+  <span class="code-keyword">const</span> rect = card.getBoundingClientRect();
+  <span class="code-keyword">const</span> x = (event.clientX - rect.left) / rect.width - 0.5;
+  <span class="code-keyword">const</span> y = (event.clientY - rect.top) / rect.height - 0.5;
+  rotateY(x * 14);
+  rotateX(y * -14);
+});</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="demo-section" id="loader">
+      <div class="container">
+        <div class="section-heading reveal-on-scroll">
+          <div class="eyebrow">07 · UI State</div>
+          <h2>骨架屏加载到真实内容</h2>
+          <p>
+            动画不仅用于“装饰”，还可以解释系统状态：正在请求、解析完成、内容就绪。
+            这里用 Timeline 依次控制骨架高光、状态指示和内容替换。
+          </p>
+        </div>
+
+        <div class="demo-shell reveal-on-scroll">
+          <div class="demo-toolbar">
+            <div class="window-dots"><i></i><i></i><i></i></div>
+            <div class="demo-title">Loading state transition</div>
+            <div class="toolbar-actions">
+              <button class="tab-btn code-toggle" data-target="code-loader" type="button">查看代码</button>
+              <button class="replay-btn" id="replayLoader" type="button">↻ 重播</button>
+            </div>
+          </div>
+
+          <div class="demo-stage loader-stage">
+            <div class="phone">
+              <div class="phone-screen">
+                <div class="phone-notch"></div>
+
+                <div class="skeleton-content">
+                  <div class="skeleton sk-title"></div>
+                  <div class="skeleton sk-hero"></div>
+                  <div class="skeleton sk-line"></div>
+                  <div class="skeleton sk-line"></div>
+                  <div class="skeleton sk-line short"></div>
+                </div>
+
+                <div class="loaded-content">
+                  <h4>Morning overview</h4>
+                  <div class="loaded-image">72%</div>
+                  <p>本周目标推进顺利，核心任务完成度较昨日提升 8%。建议优先处理两个即将到期的事项。</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="loader-copy">
+              <h3>From waiting to ready.</h3>
+              <p>
+                重播后可观察三个阶段。实际项目中，应让动画持续时间服从真实请求状态，
+                不要为了播放完整动画而故意阻塞数据展示。
+              </p>
+              <div class="status-list">
+                <div class="status-item active"><i class="status-dot"></i><span>1. 请求接口数据</span></div>
+                <div class="status-item"><i class="status-dot"></i><span>2. 解析并生成视图</span></div>
+                <div class="status-item"><i class="status-dot"></i><span>3. 内容进入可交互状态</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="demo-note">
+            <span>实现要点：Timeline 的 set() 适合切换 display；动画完成后再恢复按钮和交互状态。</span>
+            <div class="tags"><span class="tag">timeline.set()</span><span class="tag">repeat</span><span class="tag">state transition</span></div>
+          </div>
+
+          <div class="code-drawer" id="code-loader">
+<pre><span class="code-keyword">const</span> tl = <span class="code-method">gsap.timeline</span>();
+
+tl
+  .to(<span class="code-string">".skeleton::after"</span>, { <span class="code-comment">/* 伪元素通常改用 CSS 变量 */</span> })
+  .to(<span class="code-string">".skeleton-content"</span>, {
+    opacity: 0,
+    y: -8,
+    duration: 0.35
+  })
+  .set(<span class="code-string">".skeleton-content"</span>, { display: <span class="code-string">"none"</span> })
+  .set(<span class="code-string">".loaded-content"</span>, { display: <span class="code-string">"block"</span> })
+  .from(<span class="code-string">".loaded-content > *"</span>, {
+    y: 18,
+    opacity: 0,
+    stagger: 0.1
+  });</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="demo-section" id="motion">
+      <div class="container">
+        <div class="section-heading reveal-on-scroll">
+          <div class="eyebrow">08 · Motion Path</div>
+          <h2>沿 SVG 路径移动并自动旋转</h2>
+          <p>
+            这里不用 MotionPathPlugin，而是通过 getPointAtLength() 按进度读取路径坐标，
+            再用前后两个点计算切线角度。适用于地图航线、流程节点和设备轨迹。
+          </p>
+        </div>
+
+        <div class="demo-shell reveal-on-scroll">
+          <div class="demo-toolbar">
+            <div class="window-dots"><i></i><i></i><i></i></div>
+            <div class="demo-title">Flight path simulation</div>
+            <div class="toolbar-actions">
+              <button class="tab-btn code-toggle" data-target="code-motion" type="button">查看代码</button>
+              <button class="replay-btn" id="replayMotion" type="button">↻ 重播</button>
+            </div>
+          </div>
+
+          <div class="demo-stage motion-stage">
+            <div class="flight-map" id="flightMap">
+              <svg class="route-svg" viewBox="0 0 640 330" preserveAspectRatio="none" aria-hidden="true">
+                <path class="route-glow" d="M45,268 C130,260 128,94 248,150 C345,194 390,58 472,92 C530,116 548,50 604,45"/>
+                <path class="route-path" id="routePath" d="M45,268 C130,260 128,94 248,150 C345,194 390,58 472,92 C530,116 548,50 604,45"/>
+              </svg>
+              <div class="plane" id="plane">✈</div>
+              <span class="map-city city-a">Taipei</span>
+              <span class="map-city city-b">Tokyo</span>
+            </div>
+
+            <div class="flight-copy">
+              <h3>Follow the curve.</h3>
+              <p>
+                将一个普通对象的 progress 从 0 补间到 1；每次更新时读取 SVG 路径的位置，
+                并把 SVG 坐标换算为当前地图容器中的像素坐标。
+              </p>
+              <div class="flight-stats">
+                <div class="flight-stat"><small>Distance</small><strong>2,104 km</strong></div>
+                <div class="flight-stat"><small>Progress</small><strong id="flightProgress">0%</strong></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="demo-note">
+            <span>实现要点：路径坐标与容器像素尺寸可能比例不同，需根据 viewBox 做缩放转换。</span>
+            <div class="tags"><span class="tag">getPointAtLength()</span><span class="tag">atan2()</span><span class="tag">onUpdate</span></div>
+          </div>
+
+          <div class="code-drawer" id="code-motion">
+<pre><span class="code-keyword">const</span> state = { progress: 0 };
+<span class="code-keyword">const</span> total = path.getTotalLength();
+
+<span class="code-method">gsap.to</span>(state, {
+  progress: 1,
+  duration: 4,
+  ease: <span class="code-string">"power1.inOut"</span>,
+  onUpdate() {
+    <span class="code-keyword">const</span> point = path.getPointAtLength(total * state.progress);
+    <span class="code-keyword">const</span> next = path.getPointAtLength(
+      Math.min(total, total * state.progress + 1)
+    );
+    <span class="code-keyword">const</span> angle =
+      Math.atan2(next.y - point.y, next.x - point.x) * 180 / Math.PI;
+
+    <span class="code-method">gsap.set</span>(plane, { x, y, rotation: angle });
+  }
+});</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="scroll-story" id="scroll">
+      <div class="story-pin">
+        <div class="story-header">
+          <div class="eyebrow">09 · ScrollTrigger</div>
+          <h2>把滚动变成时间轴控制器</h2>
+          <p>向下滚动时，卡片横向移动；动画进度和滚动位置绑定，并在桌面端固定当前场景。</p>
+        </div>
+
+        <div class="story-track">
+          <article class="story-card" style="--story-bg: linear-gradient(135deg, #17315e, #0b9b83);">
+            <span class="story-index">CHAPTER 01</span>
+            <div class="story-visual visual-rings"></div>
+            <div class="story-content">
+              <h3>Start with hierarchy</h3>
+              <p>先确定用户应该看到什么，再决定动画顺序。视觉层级比复杂特效更重要。</p>
+            </div>
+          </article>
+
+          <article class="story-card" style="--story-bg: linear-gradient(135deg, #592f72, #ca5c76);">
+            <span class="story-index">CHAPTER 02</span>
+            <div class="story-visual visual-stack">
+              <i style="--i: 1"></i><i style="--i: 2"></i><i style="--i: 3"></i><i style="--i: 4"></i>
+            </div>
+            <div class="story-content">
+              <h3>Control the rhythm</h3>
+              <p>合理重叠动画，避免所有元素同时启动。节奏应服务信息理解，而不是炫技。</p>
+            </div>
+          </article>
+
+          <article class="story-card" style="--story-bg: linear-gradient(135deg, #184b70, #7855d4);">
+            <span class="story-index">CHAPTER 03</span>
+            <div class="story-visual visual-wave">
+              <i style="--i: 1"></i><i style="--i: 2"></i><i style="--i: 4"></i><i style="--i: 6"></i>
+              <i style="--i: 8"></i><i style="--i: 6"></i><i style="--i: 4"></i><i style="--i: 2"></i>
+            </div>
+            <div class="story-content">
+              <h3>Respond to input</h3>
+              <p>滚动、鼠标和触摸输入都可以驱动动画，但必须保持可控、可预测和可退出。</p>
+            </div>
+          </article>
+
+          <article class="story-card" style="--story-bg: linear-gradient(135deg, #684311, #bd6147);">
+            <span class="story-index">CHAPTER 04</span>
+            <div class="story-visual visual-rings"></div>
+            <div class="story-content">
+              <h3>Respect accessibility</h3>
+              <p>检测 prefers-reduced-motion，为易眩晕用户提供更少位移、更短时长或无动画版本。</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="demo-section" id="scroll-reveal">
+      <div class="container">
+        <div class="section-heading reveal-on-scroll">
+          <div class="eyebrow">10 · Scroll Reveal & Counter</div>
+          <h2>进入视口时揭示内容与数字</h2>
+          <p>
+            ScrollTrigger 适合在元素接近视口时启动动画。使用 once: true 可避免用户反复滚动时重复播放，
+            数字则通过补间普通 JavaScript 对象实现。
+          </p>
+        </div>
+
+        <div class="reveal-grid">
+          <article class="reveal-card scroll-card">
+            <span class="number">01</span>
+            <h3>Trigger</h3>
+            <p>指定哪个元素进入视口时触发，并通过 start 控制触发位置。</p>
+          </article>
+          <article class="reveal-card scroll-card">
+            <span class="number">02</span>
+            <h3>Scrub</h3>
+            <p>将时间轴进度绑定到滚动位置，适合视差、横向叙事与产品拆解。</p>
+          </article>
+          <article class="reveal-card scroll-card">
+            <span class="number">03</span>
+            <h3>Pin</h3>
+            <p>在滚动一段距离时固定关键场景，让内容分步骤进入和退出。</p>
+          </article>
+        </div>
+
+        <div class="counter-band">
+          <div class="counter-grid">
+            <div class="counter-item"><strong class="counter" data-target="60" data-suffix=" FPS">0</strong><span>稳定动画帧率</span></div>
+            <div class="counter-item"><strong class="counter" data-target="14" data-suffix=" KB">0</strong><span>核心库压缩体积量级</span></div>
+            <div class="counter-item"><strong class="counter" data-target="10" data-suffix="+">0</strong><span>页面内完整案例</span></div>
+            <div class="counter-item"><strong class="counter" data-target="100" data-suffix="%">0</strong><span>单文件可运行</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="eyebrow">Build · Observe · Refine</div>
+      <h2>Animation should clarify,<br />not distract.</h2>
+      <p>打开开发者工具，可直接修改每个案例的 duration、ease、stagger 与 ScrollTrigger 参数。</p>
+      <a class="primary-btn magnetic-link" href="#top">返回顶部 ↑</a>
+      <div class="footer-note">
+        GSAP 通过 CDN 加载；页面其余 HTML、CSS、JavaScript 均位于本文件中。
+      </div>
+    </div>
+  </footer>
+
+  <!-- GSAP core + ScrollTrigger。若公司网络屏蔽 CDN，可改成本地相对路径。 -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+
+  <script>
+    (() => {
+      "use strict";
+
+      if (!window.gsap || !window.ScrollTrigger) {
+        document.getElementById("offlineWarning").classList.add("show");
+        return;
+      }
+
+      gsap.registerPlugin(ScrollTrigger);
+
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      gsap.defaults({
+        duration: prefersReducedMotion ? 0.01 : 0.75,
+        ease: "power3.out"
+      });
+
+      let isPaused = false;
+      let heroTimeline;
+      let dashboardTimeline;
+      let loaderTimeline;
+      let motionTween;
+      let currentStaggerFrom = "center";
+
+      const q = (selector, scope = document) => scope.querySelector(selector);
+      const qa = (selector, scope = document) => [...scope.querySelectorAll(selector)];
+
+      function formatNumber(value) {
+        return Math.round(value).toLocaleString("en-US");
+      }
+
+      function splitText(element) {
+        const text = element.dataset.text || element.textContent;
+        element.setAttribute("aria-label", text);
+        element.innerHTML = [...text]
+          .map((char) => {
+            const safeChar = char === " " ? "&nbsp;" : char;
+            return `<span class="char-wrap" aria-hidden="true"><span class="char">${safeChar}</span></span>`;
+          })
+          .join("");
+      }
+
+      function prepareSvgPath(path) {
+        const length = path.getTotalLength();
+        gsap.set(path, {
+          strokeDasharray: length,
+          strokeDashoffset: length
+        });
+        return length;
+      }
+
+      function createHeroTimeline() {
+        if (heroTimeline) heroTimeline.kill();
+
+        heroTimeline = gsap.timeline();
+
+        heroTimeline
+          .set(".hero-kicker, .hero-desc, .hero-actions, .hero-meta", { opacity: 1 })
+          .fromTo(".hero-title .word",
+            { yPercent: 115, rotateX: -32, opacity: 0 },
+            {
+              yPercent: 0,
+              rotateX: 0,
+              opacity: 1,
+              duration: 1.05,
+              stagger: 0.09,
+              ease: "power4.out"
+            }
+          )
+          .from(".hero-kicker", { y: 16, opacity: 0 }, 0.1)
+          .from(".hero-desc", { y: 22, opacity: 0 }, "-=0.58")
+          .from(".hero-actions > *", {
+            y: 18,
+            opacity: 0,
+            stagger: 0.09
+          }, "-=0.48")
+          .from(".hero-meta > div", {
+            y: 14,
+            opacity: 0,
+            stagger: 0.08
+          }, "-=0.4")
+          .from(".orbital-stage", {
+            scale: 0.68,
+            opacity: 0,
+            rotation: -16,
+            duration: 1.2,
+            ease: "expo.out"
+          }, 0.1)
+          .from(".float-panel", {
+            scale: 0.8,
+            y: 30,
+            opacity: 0,
+            stagger: 0.14,
+            ease: "back.out(1.7)"
+          }, 0.65)
+          .from(".scroll-hint", { opacity: 0, y: -10 }, "-=0.25");
+
+        return heroTimeline;
+      }
+
+      function startAmbientAnimations() {
+        if (prefersReducedMotion) return;
+
+        gsap.to(".ring-1", {
+          rotation: 360,
+          duration: 18,
+          repeat: -1,
+          ease: "none"
+        });
+
+        gsap.to(".ring-3", {
+          rotation: -360,
+          duration: 34,
+          repeat: -1,
+          ease: "none"
+        });
+
+        gsap.to(".core-orb", {
+          y: -12,
+          scale: 1.035,
+          repeat: -1,
+          yoyo: true,
+          duration: 2.7,
+          ease: "sine.inOut"
+        });
+
+        gsap.to(".panel-a", {
+          y: -12,
+          rotation: -1.2,
+          repeat: -1,
+          yoyo: true,
+          duration: 2.4,
+          ease: "sine.inOut"
+        });
+
+        gsap.to(".panel-b", {
+          y: 13,
+          rotation: 1.4,
+          repeat: -1,
+          yoyo: true,
+          duration: 2.9,
+          ease: "sine.inOut"
+        });
+
+        gsap.to(".mouse::after", {
+          y: 8,
+          opacity: 0,
+          repeat: -1,
+          duration: 1.2
+        });
+
+        const orbitA = { angle: 0 };
+        const orbitB = { angle: 180 };
+
+        gsap.to(orbitA, {
+          angle: 360,
+          duration: 7,
+          repeat: -1,
+          ease: "none",
+          onUpdate: () => {
+            const radius = q(".orbital-stage").clientWidth * 0.31;
+            const rad = orbitA.angle * Math.PI / 180;
+            gsap.set(".satellite-a", {
+              x: Math.cos(rad) * radius,
+              y: Math.sin(rad) * radius
+            });
+          }
+        });
+
+        gsap.to(orbitB, {
+          angle: 540,
+          duration: 11,
+          repeat: -1,
+          ease: "none",
+          onUpdate: () => {
+            const radiusX = q(".orbital-stage").clientWidth * 0.42;
+            const radiusY = q(".orbital-stage").clientWidth * 0.23;
+            const rad = orbitB.angle * Math.PI / 180;
+            gsap.set(".satellite-b", {
+              x: Math.cos(rad) * radiusX,
+              y: Math.sin(rad) * radiusY
+            });
+          }
+        });
+      }
+
+      function playEasing() {
+        qa(".ease-ball").forEach((ball) => {
+          gsap.killTweensOf(ball);
+          gsap.fromTo(ball,
+            { x: 0 },
+            {
+              x: () => Math.max(0, ball.parentElement.clientWidth - ball.offsetWidth - 20),
+              duration: prefersReducedMotion ? 0.01 : 2.2,
+              ease: ball.dataset.ease,
+              overwrite: true
+            }
+          );
+        });
+      }
+
+      function playDashboard() {
+        if (dashboardTimeline) dashboardTimeline.kill();
+
+        const scene = q("#dashboardScene");
+        const line = q(".dash-line", scene);
+        const lineLength = prepareSvgPath(line);
+
+        qa(".metric-number", scene).forEach((node) => {
+          node.textContent = "0";
+        });
+
+        dashboardTimeline = gsap.timeline();
+
+        dashboardTimeline
+          .set(".dash-toast", { opacity: 1 })
+          .from(".dashboard-scene", {
+            scale: 0.96,
+            opacity: 0,
+            duration: 0.5
+          })
+          .from(".dash-sidebar", {
+            xPercent: -100,
+            duration: 0.68
+          }, "-=0.2")
+          .from(".dash-logo, .side-item", {
+            x: -24,
+            opacity: 0,
+            stagger: 0.07
+          }, "-=0.34")
+          .from(".dash-topbar", {
+            y: -20,
+            opacity: 0
+          }, "-=0.25")
+          .from(".metric-card", {
+            y: 34,
+            opacity: 0,
+            stagger: 0.12
+          }, "-=0.34")
+          .to(qa(".metric-number", scene).map((element) => ({ element, value: 0 })), {
+            value: (index) => Number(qa(".metric-number", scene)[index].dataset.value),
+            duration: 1.1,
+            stagger: 0.08,
+            ease: "power2.out",
+            onUpdate: function () {
+              this.targets().forEach((item) => {
+                item.element.textContent = formatNumber(item.value);
+              });
+            }
+          }, "<")
+          .from(".dash-chart-card", {
+            y: 24,
+            scale: 0.97,
+            opacity: 0
+          }, "-=0.52")
+          .to(line, {
+            strokeDashoffset: 0,
+            duration: 1.35,
+            ease: "power2.inOut"
+          }, "-=0.32")
+          .from(".chart-area", {
+            opacity: 0,
+            duration: 0.6
+          }, "-=0.6")
+          .from(".dash-toast", {
+            x: 55,
+            opacity: 0,
+            duration: 0.58,
+            ease: "back.out(1.7)"
+          }, "-=0.25");
+
+        return lineLength;
+      }
+
+      function createStaggerGrid() {
+        const grid = q("#staggerGrid");
+        if (!grid.children.length) {
+          grid.innerHTML = Array.from({ length: 48 }, (_, index) =>
+            `<i class="stagger-cell" aria-hidden="true" style="filter:hue-rotate(${index * 2.8}deg)"></i>`
+          ).join("");
+        }
+      }
+
+      function playStagger(from = currentStaggerFrom) {
+        currentStaggerFrom = from;
+        gsap.killTweensOf(".stagger-cell");
+
+        gsap.fromTo(".stagger-cell",
+          {
+            scale: 0.25,
+            opacity: 0,
+            rotation: () => gsap.utils.random(-32, 32)
+          },
+          {
+            scale: 1,
+            opacity: 1,
+            rotation: 0,
+            duration: prefersReducedMotion ? 0.01 : 0.72,
+            ease: "back.out(1.75)",
+            stagger: {
+              grid: "auto",
+              from: /^\d+$/.test(String(from)) ? Number(from) : from,
+              amount: prefersReducedMotion ? 0 : 0.82
+            }
+          }
+        );
+      }
+
+      function playTextReveal() {
+        gsap.fromTo("#revealTitle .char",
+          {
+            yPercent: 120,
+            rotateX: -80,
+            opacity: 0
+          },
+          {
+            yPercent: 0,
+            rotateX: 0,
+            opacity: 1,
+            duration: prefersReducedMotion ? 0.01 : 0.92,
+            stagger: prefersReducedMotion ? 0 : 0.035,
+            ease: "power4.out"
+          }
+        );
+
+        gsap.fromTo(".reveal-subtitle",
+          { y: 18, opacity: 0 },
+          { y: 0, opacity: 1, delay: prefersReducedMotion ? 0 : 0.48 }
+        );
+      }
+
+      function playSvg() {
+        const path = q(".draw-path");
+        const length = prepareSvgPath(path);
+        const state = { progress: 0 };
+
+        gsap.set(".draw-dot", { scale: 0, transformOrigin: "center" });
+        gsap.set("#svgProgressFill", { width: "0%" });
+        q("#svgProgress").textContent = "0%";
+
+        gsap.timeline()
+          .to(".draw-dot:first-of-type", {
+            scale: 1,
+            duration: 0.35,
+            ease: "back.out(2)"
+          })
+          .to(path, {
+            strokeDashoffset: 0,
+            duration: prefersReducedMotion ? 0.01 : 2.4,
+            ease: "power2.inOut"
+          }, "-=0.05")
+          .to(state, {
+            progress: 100,
+            duration: prefersReducedMotion ? 0.01 : 2.4,
+            ease: "power2.inOut",
+            onUpdate: () => {
+              const value = Math.round(state.progress);
+              q("#svgProgress").textContent = value + "%";
+              gsap.set("#svgProgressFill", { width: value + "%" });
+            }
+          }, "<")
+          .to(".draw-dot:last-of-type", {
+            scale: 1,
+            duration: 0.4,
+            ease: "back.out(2)"
+          }, "-=0.12");
+
+        return length;
+      }
+
+      function setupPointerInteractions() {
+        const card = q("#productCard");
+        const glare = q(".product-glare", card);
+        const shoe = q(".shoe", card);
+
+        const cardRotateX = gsap.quickTo(card, "rotationX", {
+          duration: 0.5,
+          ease: "power3.out"
+        });
+        const cardRotateY = gsap.quickTo(card, "rotationY", {
+          duration: 0.5,
+          ease: "power3.out"
+        });
+        const shoeX = gsap.quickTo(shoe, "x", {
+          duration: 0.55,
+          ease: "power3.out"
+        });
+        const shoeY = gsap.quickTo(shoe, "y", {
+          duration: 0.55,
+          ease: "power3.out"
+        });
+
+        card.addEventListener("pointermove", (event) => {
+          if (prefersReducedMotion) return;
+
+          const rect = card.getBoundingClientRect();
+          const x = (event.clientX - rect.left) / rect.width - 0.5;
+          const y = (event.clientY - rect.top) / rect.height - 0.5;
+
+          card.style.setProperty("--mx", `${(x + 0.5) * 100}%`);
+          card.style.setProperty("--my", `${(y + 0.5) * 100}%`);
+
+          cardRotateY(x * 15);
+          cardRotateX(y * -13);
+          shoeX(x * 14);
+          shoeY(y * 12);
+
+          gsap.to(glare, {
+            opacity: 0.72,
+            xPercent: x * 72,
+            duration: 0.35,
+            overwrite: true
+          });
+        });
+
+        card.addEventListener("pointerleave", () => {
+          cardRotateX(0);
+          cardRotateY(0);
+          shoeX(0);
+          shoeY(0);
+          gsap.to(glare, { opacity: 0, xPercent: -30, duration: 0.45 });
+        });
+
+        const wrap = q("#magneticWrap");
+        const button = q("#magneticBtn");
+        const moveX = gsap.quickTo(button, "x", { duration: 0.4, ease: "power3.out" });
+        const moveY = gsap.quickTo(button, "y", { duration: 0.4, ease: "power3.out" });
+
+        wrap.addEventListener("pointermove", (event) => {
+          if (prefersReducedMotion) return;
+          const rect = wrap.getBoundingClientRect();
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+          moveX((event.clientX - centerX) * 0.18);
+          moveY((event.clientY - centerY) * 0.18);
+        });
+
+        wrap.addEventListener("pointerleave", () => {
+          moveX(0);
+          moveY(0);
+          gsap.to(button, { scale: 1, duration: 0.4 });
+        });
+
+        button.addEventListener("pointerenter", () => {
+          gsap.to(button, { scale: 1.07, duration: 0.28 });
+        });
+      }
+
+      function playLoader() {
+        if (loaderTimeline) loaderTimeline.kill();
+
+        const skeletonContent = q(".skeleton-content");
+        const loadedContent = q(".loaded-content");
+        const statuses = qa(".status-item");
+
+        gsap.set(skeletonContent, { display: "block", opacity: 1, y: 0 });
+        gsap.set(loadedContent, { display: "none", opacity: 1 });
+        gsap.set(".skeleton", { opacity: 1 });
+        statuses.forEach((item, index) => item.classList.toggle("active", index === 0));
+
+        loaderTimeline = gsap.timeline();
+
+        loaderTimeline
+          .to(".skeleton", {
+            "--shine-x": "110%",
+            duration: prefersReducedMotion ? 0.01 : 0.9,
+            repeat: prefersReducedMotion ? 0 : 1,
+            stagger: 0.06,
+            onStart: () => {
+              qa(".skeleton").forEach((item) => {
+                gsap.fromTo(item, { backgroundPosition: "-200% 0" }, {
+                  backgroundPosition: "200% 0",
+                  duration: 1.1,
+                  ease: "none"
+                });
+                gsap.fromTo(item, { filter: "brightness(1)" }, {
+                  filter: "brightness(1.08)",
+                  repeat: 1,
+                  yoyo: true,
+                  duration: 0.55
+                });
+              });
+            }
+          })
+          .call(() => {
+            statuses.forEach((item, index) => item.classList.toggle("active", index === 1));
+          })
+          .to(skeletonContent, {
+            opacity: 0,
+            y: -8,
+            duration: 0.35
+          })
+          .set(skeletonContent, { display: "none" })
+          .set(loadedContent, { display: "block" })
+          .from(".loaded-content > *", {
+            y: 18,
+            opacity: 0,
+            stagger: prefersReducedMotion ? 0 : 0.1,
+            duration: 0.55
+          })
+          .call(() => {
+            statuses.forEach((item, index) => item.classList.toggle("active", index === 2));
+          });
+
+        return loaderTimeline;
+      }
+
+      function playMotionPath() {
+        if (motionTween) motionTween.kill();
+
+        const path = q("#routePath");
+        const map = q("#flightMap");
+        const plane = q("#plane");
+        const routeSvg = q(".route-svg");
+        const totalLength = path.getTotalLength();
+        const state = { progress: 0 };
+
+        function placePlane() {
+          const point = path.getPointAtLength(totalLength * state.progress);
+          const nextPoint = path.getPointAtLength(
+            Math.min(totalLength, totalLength * state.progress + 1)
+          );
+
+          const svgRect = routeSvg.getBoundingClientRect();
+          const mapRect = map.getBoundingClientRect();
+          const viewBox = routeSvg.viewBox.baseVal;
+
+          const scaleX = svgRect.width / viewBox.width;
+          const scaleY = svgRect.height / viewBox.height;
+          const x = svgRect.left - mapRect.left + (point.x - viewBox.x) * scaleX;
+          const y = svgRect.top - mapRect.top + (point.y - viewBox.y) * scaleY;
+          const angle = Math.atan2(
+            (nextPoint.y - point.y) * scaleY,
+            (nextPoint.x - point.x) * scaleX
+          ) * 180 / Math.PI;
+
+          gsap.set(plane, {
+            x,
+            y,
+            rotation: angle
+          });
+
+          q("#flightProgress").textContent = Math.round(state.progress * 100) + "%";
+        }
+
+        placePlane();
+
+        motionTween = gsap.to(state, {
+          progress: 1,
+          duration: prefersReducedMotion ? 0.01 : 4.2,
+          ease: "power1.inOut",
+          onUpdate: placePlane
+        });
+
+        return motionTween;
+      }
+
+      function setupScrollAnimations() {
+        const mm = gsap.matchMedia();
+
+        mm.add(
+          {
+            desktop: "(min-width: 821px)",
+            mobile: "(max-width: 820px)",
+            reduceMotion: "(prefers-reduced-motion: reduce)"
+          },
+          (context) => {
+            const { desktop, reduceMotion } = context.conditions;
+
+            qa(".reveal-on-scroll").forEach((element) => {
+              gsap.from(element, {
+                y: reduceMotion ? 0 : 42,
+                opacity: 0,
+                duration: reduceMotion ? 0.01 : 0.85,
+                scrollTrigger: {
+                  trigger: element,
+                  start: "top 84%",
+                  once: true
+                }
+              });
+            });
+
+            gsap.from(".scroll-card", {
+              y: reduceMotion ? 0 : 70,
+              opacity: 0,
+              scale: reduceMotion ? 1 : 0.96,
+              stagger: reduceMotion ? 0 : 0.12,
+              scrollTrigger: {
+                trigger: ".reveal-grid",
+                start: "top 78%",
+                once: true
+              }
+            });
+
+            qa(".counter").forEach((element) => {
+              const state = { value: 0 };
+              ScrollTrigger.create({
+                trigger: element,
+                start: "top 88%",
+                once: true,
+                onEnter: () => {
+                  gsap.to(state, {
+                    value: Number(element.dataset.target),
+                    duration: reduceMotion ? 0.01 : 1.5,
+                    ease: "power3.out",
+                    onUpdate: () => {
+                      element.textContent =
+                        Math.round(state.value) + (element.dataset.suffix || "");
+                    }
+                  });
+                }
+              });
+            });
+
+            if (desktop && !reduceMotion) {
+              const track = q(".story-track");
+              const getDistance = () => Math.max(0, track.scrollWidth - window.innerWidth);
+
+              const storyTween = gsap.to(track, {
+                x: () => -getDistance(),
+                ease: "none",
+                scrollTrigger: {
+                  trigger: ".scroll-story",
+                  start: "top top",
+                  end: () => "+=" + Math.max(window.innerHeight * 2.6, getDistance()),
+                  pin: ".story-pin",
+                  scrub: 1,
+                  invalidateOnRefresh: true
+                }
+              });
+
+              qa(".story-card").forEach((card) => {
+                gsap.fromTo(q(".story-visual", card),
+                  { scale: 0.82, rotation: -6 },
+                  {
+                    scale: 1.08,
+                    rotation: 4,
+                    ease: "none",
+                    scrollTrigger: {
+                      trigger: card,
+                      containerAnimation: storyTween,
+                      start: "left right",
+                      end: "right left",
+                      scrub: true
+                    }
+                  }
+                );
+              });
+            } else {
+              gsap.from(".story-card", {
+                y: reduceMotion ? 0 : 44,
+                opacity: 0,
+                stagger: 0.1,
+                scrollTrigger: {
+                  trigger: ".story-track",
+                  start: "top 80%",
+                  once: true
+                }
+              });
+            }
+          }
+        );
+      }
+
+      function setupCodeDrawers() {
+        qa(".code-toggle").forEach((button) => {
+          button.addEventListener("click", () => {
+            const drawer = document.getElementById(button.dataset.target);
+            const open = drawer.classList.toggle("open");
+            button.textContent = open ? "收起代码" : "查看代码";
+            if (open) {
+              gsap.fromTo(drawer, { opacity: 0 }, { opacity: 1, duration: 0.25 });
+            }
+            ScrollTrigger.refresh();
+          });
+        });
+      }
+
+      function setupButtons() {
+        q("#replayHero").addEventListener("click", createHeroTimeline);
+        q("#playShowcase").addEventListener("click", () => {
+          createHeroTimeline();
+          setTimeout(() => {
+            document.querySelector("#easing").scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth" });
+            playEasing();
+          }, prefersReducedMotion ? 0 : 900);
+        });
+        q("#replayEasing").addEventListener("click", playEasing);
+        q("#replayTimeline").addEventListener("click", playDashboard);
+        q("#replayStagger").addEventListener("click", () => playStagger(currentStaggerFrom));
+        q("#replayText").addEventListener("click", playTextReveal);
+        q("#replaySvg").addEventListener("click", playSvg);
+        q("#replayLoader").addEventListener("click", playLoader);
+        q("#replayMotion").addEventListener("click", playMotionPath);
+
+        qa("#staggerOptions button").forEach((button) => {
+          button.addEventListener("click", () => {
+            qa("#staggerOptions button").forEach((item) => item.classList.remove("active"));
+            button.classList.add("active");
+            playStagger(button.dataset.from);
+          });
+        });
+
+        q("#toggleMotion").addEventListener("click", () => {
+          isPaused = !isPaused;
+          gsap.globalTimeline.paused(isPaused);
+          q("#motionIcon").textContent = isPaused ? "▶" : "Ⅱ";
+          q("#toggleMotion").setAttribute("aria-label", isPaused ? "继续所有动画" : "暂停所有动画");
+        });
+      }
+
+      function setupSectionAutoPlay() {
+        const autoPlayMap = [
+          ["#easing", playEasing],
+          ["#timeline", playDashboard],
+          ["#stagger", () => playStagger(currentStaggerFrom)],
+          ["#text", playTextReveal],
+          ["#svg", playSvg],
+          ["#loader", playLoader],
+          ["#motion", playMotionPath]
+        ];
+
+        autoPlayMap.forEach(([selector, callback]) => {
+          ScrollTrigger.create({
+            trigger: selector,
+            start: "top 68%",
+            once: true,
+            onEnter: callback
+          });
+        });
+      }
+
+      function init() {
+        createStaggerGrid();
+        splitText(q("#revealTitle"));
+
+        createHeroTimeline();
+        startAmbientAnimations();
+        setupPointerInteractions();
+        setupCodeDrawers();
+        setupButtons();
+        setupScrollAnimations();
+        setupSectionAutoPlay();
+
+        window.addEventListener("load", () => {
+          ScrollTrigger.refresh();
+          playMotionPath();
+          motionTween.pause(0);
+        });
+
+        window.addEventListener("resize", gsap.utils.debounce
+          ? gsap.utils.debounce(() => ScrollTrigger.refresh(), 180)
+          : () => ScrollTrigger.refresh()
+        );
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>
